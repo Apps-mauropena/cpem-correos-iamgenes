@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agendar reunión · CPEM</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Outfit:wght@300;400;500;600&display=swap');
+  :root {
+    --ink:#16223b;--ink-soft:#56607a;--line:#e3e8f0;--bg:#f5f7fb;
+    --navy:#16335c;--navy-dk:#0f2645;--navy-soft:#e9eff8;
+    --ok:#16a34a;--wa:#25d366;
+    --shadow:0 1px 2px rgba(15,38,69,.05),0 20px 50px -18px rgba(15,38,69,.22);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Outfit',sans-serif;background:radial-gradient(1000px 500px at 85% -10%,#e9eff8 0%,transparent 55%),var(--bg);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;-webkit-font-smoothing:antialiased}
+  .card{width:100%;max-width:460px;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;animation:rise .6s cubic-bezier(.16,1,.3,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .head{background:linear-gradient(155deg,var(--navy-dk) 0%,var(--navy) 100%);color:#fff;padding:32px 36px 28px;position:relative;overflow:hidden}
+  .head::after{content:"";position:absolute;right:-50px;top:-50px;width:190px;height:190px;border:1px solid rgba(255,255,255,.1);border-radius:50%}
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:20px;position:relative}
+  .logo{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);display:grid;place-items:center;font-family:'Fraunces',serif;font-weight:600;font-size:15px;letter-spacing:.02em}
+  .brand-txt strong{display:block;font-size:12.5px;font-weight:600}
+  .brand-txt span{font-size:11px;opacity:.82}
+  .head h1{font-family:'Fraunces',serif;font-weight:500;font-size:24px;line-height:1.22;letter-spacing:-.01em;margin-bottom:8px;position:relative}
+  .head p{font-size:13.5px;line-height:1.55;opacity:.9;position:relative}
+  .inner{padding:28px 36px 32px}
+  .field{margin-bottom:18px}
+  label{display:block;font-size:12.5px;font-weight:500;margin-bottom:9px;color:var(--ink)}
+  .mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .mode-opt{position:relative}
+  .mode-opt input{position:absolute;opacity:0;inset:0;cursor:pointer}
+  .mode-opt label{margin:0;cursor:pointer;text-align:center;border:1.5px solid var(--line);border-radius:13px;padding:14px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border-color .2s,background .2s,transform .15s}
+  .mode-opt label:hover{transform:translateY(-2px)}
+  .mode-opt .ico{width:28px;height:28px;display:grid;place-items:center;color:var(--ink-soft);transition:color .2s}
+  .mode-opt .ico svg{width:21px;height:21px}
+  .mode-opt .nm{font-size:12px;font-weight:600}
+  .mode-opt input:checked+label{border-color:var(--navy);background:var(--navy-soft)}
+  .mode-opt input:checked+label .ico{color:var(--navy)}
+  .mode-opt.wa input:checked+label{border-color:var(--wa);background:#e6f9ee}
+  .mode-opt.wa input:checked+label .ico{color:var(--wa)}
+  input[type="text"],input[type="email"],input[type="tel"],input[type="date"],select{width:100%;font-family:inherit;font-size:15px;color:var(--ink);background:#fbfcfe;border:1px solid var(--line);border-radius:11px;padding:13px 15px;transition:border-color .2s,box-shadow .2s,background .2s}
+  input::placeholder{color:#aab2c2}
+  input:focus,select:focus{outline:none;background:#fff;border-color:var(--navy);box-shadow:0 0 0 4px var(--navy-soft)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .cond{display:none}
+  .cond.show{display:block;animation:fade .3s ease both}
+  @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+  .submit{width:100%;font-family:inherit;font-size:14.5px;font-weight:600;color:#fff;background:var(--navy);border:none;border-radius:11px;padding:15px;cursor:pointer;margin-top:8px;letter-spacing:.03em;transition:background .25s,transform .15s}
+  .submit:hover{background:var(--navy-dk)}
+  .submit:active{transform:scale(.99)}
+  .trust{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:15px;font-size:11.5px;color:var(--ink-soft)}
+  .trust svg{width:13px;height:13px}
+  .done{display:none;text-align:center;padding:6px 0;animation:rise .5s cubic-bezier(.16,1,.3,1) both}
+  .done.show{display:block}
+  .check{width:60px;height:60px;margin:4px auto 20px;border-radius:50%;background:#e9f9ef;color:var(--ok);display:grid;place-items:center}
+  .check svg{width:28px;height:28px}
+  .done h2{font-family:'Fraunces',serif;font-weight:500;font-size:22px;margin-bottom:9px}
+  .done>p{color:var(--ink-soft);font-size:14px;line-height:1.6}
+  .done b{color:var(--ink);font-weight:600}
+  .done .sign{margin-top:22px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+  .done .sign b{color:var(--ink)}
+  @media(max-width:420px){.head,.inner{padding-left:24px;padding-right:24px}.head h1{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="head">
+    <div class="brand">
+      <div class="logo">CPEM</div>
+      <div class="brand-txt">
+        <strong>Centro de Postgrados del Estado de México</strong>
+        <span>Dirección de Vinculación Institucional</span>
+      </div>
+    </div>
+    <h1 id="headTitle">Conversemos por WhatsApp</h1>
+    <p id="headSub">Compártanos su número y un representante de la Dirección de Vinculación del CPEM se comunicará con usted para presentarle nuestra propuesta de colaboración académica e institucional.</p>
+  </div>
+  <div class="inner">
+    <div id="formView">
+      <form id="form" novalidate>
+        <div class="field">
+          <label>¿Cómo prefiere que le contactemos?</label>
+          <div class="mode-grid">
+            <div class="mode-opt wa">
+              <input type="radio" name="modo" id="mwa" value="WhatsApp" checked>
+              <label for="mwa">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg></span>
+                <span class="nm">WhatsApp</span>
+              </label>
+            </div>
+            <div class="mode-opt">
+              <input type="radio" name="modo" id="mtel" value="Llamada telefónica">
+              <label for="mtel">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg></span>
+                <span class="nm">Llamada</span>
+              </label>
+            </div>
+            <div class="mode-opt">
+              <input type="radio" name="modo" id="mzoom" value="Videollamada por Zoom">
+              <label for="mzoom">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg></span>
+                <span class="nm">Zoom</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="nombre">Nombre y cargo</label>
+          <input type="text" id="nombre" name="nombre" placeholder="Ej. Dra. María González, Directora Médica" required>
+        </div>
+        <div class="field cond show" id="campoWa">
+          <label for="whatsapp">Número de WhatsApp</label>
+          <input type="tel" id="whatsapp" name="whatsapp" placeholder="+52 1 ...">
+        </div>
+        <div class="field cond" id="campoTel">
+          <label for="telefono">Teléfono de contacto</label>
+          <input type="tel" id="telefono" name="telefono" placeholder="+52 ...">
+        </div>
+        <div class="field cond" id="campoCorreo">
+          <label for="correo">Correo electrónico</label>
+          <input type="email" id="correo" name="correo" placeholder="nombre@institucion.mx">
+        </div>
+        <div class="field cond" id="campoFecha">
+          <label>Día y horario de su preferencia</label>
+          <div class="row">
+            <input type="date" id="fecha" name="fecha">
+            <select id="hora" name="hora">
+              <option value="" disabled selected>Horario</option>
+              <option>09:00 – 10:00</option>
+              <option>10:00 – 11:00</option>
+              <option>11:00 – 12:00</option>
+              <option>12:00 – 13:00</option>
+              <option>13:00 – 14:00</option>
+              <option>14:00 – 15:00</option>
+              <option>15:00 – 16:00</option>
+              <option>16:00 – 17:00</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="submit" id="btn">SOLICITAR POR WHATSAPP</button>
+        <div class="trust">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Sus datos son confidenciales · RVOE SEP 20180199
+        </div>
+      </form>
+    </div>
+    <div class="done" id="done">
+      <div class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <h2>Solicitud recibida</h2>
+      <p id="doneMsg"></p>
+      <div class="sign">
+        <b>Dr. Jorge Zaldívar Vázquez</b> · Director General<br>
+        Centro de Postgrados del Estado de México — CPEM<br>
+        info@postgradoscpem.mx · postgradoscpem.mx
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  const form=document.getElementById('form');
+  const fecha=document.getElementById('fecha');
+  const btn=document.getElementById('btn');
+  const campoWa=document.getElementById('campoWa');
+  const campoTel=document.getElementById('campoTel');
+  const campoCorreo=document.getElementById('campoCorreo');
+  const campoFecha=document.getElementById('campoFecha');
+  const whatsapp=document.getElementById('whatsapp');
+  const telefono=document.getElementById('telefono');
+  const correo=document.getElementById('correo');
+  const hora=document.getElementById('hora');
+  const headTitle=document.getElementById('headTitle');
+  const headSub=document.getElementById('headSub');
+  fecha.min=new Date().toISOString().split('T')[0];
+  function actualizarCampos(){
+    const modo=document.querySelector('input[name="modo"]:checked').value;
+    if(modo==='WhatsApp'){
+      campoWa.classList.add('show');campoTel.classList.remove('show');campoCorreo.classList.remove('show');campoFecha.classList.remove('show');
+      whatsapp.required=true;telefono.required=false;correo.required=false;fecha.required=false;hora.required=false;
+      btn.textContent='SOLICITAR POR WHATSAPP';
+      headTitle.textContent='Conversemos por WhatsApp';
+      headSub.textContent='Compártanos su número y un representante de la Dirección de Vinculación del CPEM se comunicará con usted para presentarle nuestra propuesta de colaboración académica e institucional.';
+    }else if(modo==='Llamada telefónica'){
+      campoWa.classList.remove('show');campoTel.classList.add('show');campoCorreo.classList.remove('show');campoFecha.classList.add('show');
+      whatsapp.required=false;telefono.required=true;correo.required=false;fecha.required=true;hora.required=true;
+      btn.textContent='AGENDAR LLAMADA DE 15 MIN';
+      headTitle.textContent='Agende una llamada de 15 minutos';
+      headSub.textContent='Seleccione el día y horario de su preferencia. La Dirección de Vinculación del CPEM le presentará las oportunidades de convenio y colaboración institucional.';
+    }else{
+      campoWa.classList.remove('show');campoTel.classList.remove('show');campoCorreo.classList.add('show');campoFecha.classList.add('show');
+      whatsapp.required=false;telefono.required=false;correo.required=true;fecha.required=true;hora.required=true;
+      btn.textContent='AGENDAR SESIÓN POR ZOOM';
+      headTitle.textContent='Agende una sesión virtual por Zoom';
+      headSub.textContent='Indique el horario que mejor se adapte a su agenda. Le enviaremos el acceso a la videollamada para presentarle nuestra propuesta de alianza estratégica.';
+    }
+  }
+  document.querySelectorAll('input[name="modo"]').forEach(r=>{r.addEventListener('change',actualizarCampos)});
+  actualizarCampos();
+  fecha.addEventListener('change',()=>{
+    const day=new Date(fecha.value+'T00:00').getDay();
+    if(day===0||day===6){fecha.setCustomValidity('Por favor seleccione un día hábil.');fecha.reportValidity();}
+    else{fecha.setCustomValidity('');}
+  });
+  form.addEventListener('submit',(e)=>{
+    e.preventDefault();
+    if(!form.checkValidity()){form.reportValidity();return;}
+    const d=new FormData(form);
+    const nombre=d.get('nombre').trim();
+    const modo=d.get('modo');
+    let msg;
+    if(modo==='WhatsApp'){
+      msg=`Gracias, <b>${nombre}</b>. Un representante de la Dirección de Vinculación del CPEM se comunicará con usted por <b>WhatsApp</b> a la brevedad.`;
+    }else{
+      const fechaFmt=new Date(d.get('fecha')+'T00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+      const dur=modo==='Videollamada por Zoom'?'de 20 a 30 minutos':'de 15 minutos';
+      msg=`Gracias, <b>${nombre}</b>. Su sesión ${dur} por <b>${modo}</b> queda solicitada para el <b>${fechaFmt}</b> de <b>${d.get('hora')}</b>. Le confirmaremos los detalles a la brevedad.`;
+    }
+    document.getElementById('doneMsg').innerHTML=msg;
+    document.getElementById('formView').style.display='none';
+    document.getElementById('done').classList.add('show');
+  });
+</script>
+</body>
+</html>
