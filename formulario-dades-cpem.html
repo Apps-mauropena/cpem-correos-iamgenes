@@ -1,289 +1,280 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
-
-export const VinculacionesModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-  const [modo, setModo] = useState('WhatsApp');
-  const [nombre, setNombre] = useState('');
-  const [fecha, setFecha] = useState('');
-  const [hora, setHora] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-
-  // Cerrar al presionar la tecla Esc
-  React.useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    if (isOpen) window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
-
-  const getHeadContent = () => {
-    if (modo === 'WhatsApp') {
-      return {
-        title: 'Conversemos por WhatsApp',
-        desc: 'Compártanos su número y un representante de la Dirección de Vinculación del CPEM se comunicará con usted para presentarle nuestra propuesta de colaboración académica e institucional.',
-        btn: 'SOLICITAR POR WHATSAPP'
-      };
-    } else if (modo === 'Llamada telefónica') {
-      return {
-        title: 'Agende una llamada de 15 minutos',
-        desc: 'Seleccione el día y horario de su preferencia. La Dirección de Vinculación del CPEM le presentará las oportunidades de convenio y colaboración institucional para hospitales, clínicas y organizaciones del sector salud.',
-        btn: 'AGENDAR LLAMADA DE 15 MIN'
-      };
-    } else {
-      return {
-        title: 'Agende una sesión virtual por Zoom de 20 a 30 minutos',
-        desc: 'Indique el horario que mejor se adapte a su agenda. Le enviaremos el acceso a la videollamada para presentarle nuestra propuesta de alianza estratégica y vinculación académica institucional.',
-        btn: 'AGENDAR SESIÓN POR ZOOM'
-      };
-    }
-  };
-
-  const content = getHeadContent();
-
-  const getSuccessMessage = () => {
-    if (modo === 'WhatsApp') {
-      return <>Gracias, <b className="font-semibold text-[#16223b]">{nombre}</b>. Un representante de la Dirección de Vinculación del CPEM se comunicará con usted por <b className="font-semibold text-[#16223b]">WhatsApp</b> para presentarle nuestra propuesta de colaboración académica e institucional.</>;
-    } else {
-      const dur = modo === 'Videollamada por Zoom' ? 'de 20 a 30 minutos' : 'de 15 minutos';
-      const fechaFmt = fecha ? new Date(fecha + 'T00:00').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }) : '';
-      return <>Gracias, <b className="font-semibold text-[#16223b]">{nombre}</b>. Su sesión {dur} por <b className="font-semibold text-[#16223b]">{modo}</b> con la Dirección de Vinculación del CPEM queda solicitada para el <b className="font-semibold text-[#16223b]">{fechaFmt}</b> de <b className="font-semibold text-[#16223b]">{hora}</b>. Le confirmaremos los detalles a la brevedad.</>;
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#16223b]/60 backdrop-blur-sm overflow-y-auto">
-      <div 
-        className="relative w-full max-w-[460px] bg-white rounded-[22px] shadow-[0_1px_2px_rgba(15,38,69,0.05),_0_20px_50px_-18px_rgba(15,38,69,0.22)] overflow-hidden my-auto"
-        onClick={e => e.stopPropagation()}
-        style={{ fontFamily: "'Outfit', sans-serif" }}
-      >
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 text-white hover:text-white/80 z-10 p-2"
-          aria-label="Cerrar modal"
-        >
-          <X className="w-6 h-6" />
-        </button>
-
-        <div className="bg-gradient-to-br from-[#0f2645] to-[#16335c] text-white pt-8 pb-7 px-9 relative overflow-hidden">
-          <div className="absolute -right-[50px] -top-[50px] w-[190px] h-[190px] border border-white/10 rounded-full pointer-events-none"></div>
-          <div className="flex items-center gap-[11px] mb-5 relative">
-            <div className="w-[42px] h-[42px] rounded-[10px] bg-white/10 border border-white/20 flex items-center justify-center font-serif font-semibold text-[15px] tracking-wider">
-              CPEM
-            </div>
-            <div>
-              <strong className="block text-[12.5px] font-semibold leading-tight">Centro de Postgrados del Estado de México</strong>
-              <span className="text-[11px] opacity-80">Dirección de Vinculación Institucional</span>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vista previa · Modal CPEM</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Outfit:wght@300;400;500;600&display=swap');
+  :root{
+    --ink:#16223b;--ink-soft:#56607a;--line:#e3e8f0;
+    --navy:#16335c;--navy-dk:#0f2645;--navy-soft:#e9eff8;
+    --ok:#16a34a;--wa:#25d366;
+    --shadow:0 1px 2px rgba(15,38,69,.05),0 20px 50px -18px rgba(15,38,69,.22);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Outfit',sans-serif;color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+  /* Fondo simulado de la página (como el modal abierto sobre el sitio) */
+  .backdrop{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(22,34,59,.6);backdrop-filter:blur(4px);overflow-y:auto}
+  .reopen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:radial-gradient(1000px 500px at 85% -10%,#e9eff8 0%,transparent 55%),#f5f7fb}
+  .reopen button{font-family:inherit;font-size:14px;font-weight:600;color:#fff;background:var(--navy);border:none;border-radius:11px;padding:14px 22px;cursor:pointer}
+  .card{position:relative;width:100%;max-width:460px;background:#fff;border-radius:22px;box-shadow:var(--shadow);overflow:hidden;margin:auto;animation:rise .5s cubic-bezier(.16,1,.3,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .close{position:absolute;top:16px;right:16px;z-index:10;background:none;border:none;color:#fff;cursor:pointer;padding:6px;opacity:.9}
+  .close:hover{opacity:1}
+  .close svg{width:22px;height:22px}
+  .head{background:linear-gradient(155deg,var(--navy-dk) 0%,var(--navy) 100%);color:#fff;padding:32px 36px 28px;position:relative;overflow:hidden}
+  .head::after{content:"";position:absolute;right:-50px;top:-50px;width:190px;height:190px;border:1px solid rgba(255,255,255,.1);border-radius:50%}
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:20px;position:relative}
+  .logo{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);display:grid;place-items:center;font-family:'Fraunces',serif;font-weight:600;font-size:15px;letter-spacing:.02em}
+  .brand-txt strong{display:block;font-size:12.5px;font-weight:600}
+  .brand-txt span{font-size:11px;opacity:.82}
+  .head h1{font-family:'Fraunces',serif;font-weight:500;font-size:24px;line-height:1.22;letter-spacing:-.01em;margin-bottom:8px;position:relative}
+  .head p{font-size:13.5px;line-height:1.55;opacity:.9;position:relative}
+  .inner{padding:28px 36px 32px}
+  .field{margin-bottom:18px}
+  label{display:block;font-size:12.5px;font-weight:500;margin-bottom:9px;color:var(--ink)}
+  .mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .mode-opt{position:relative}
+  .mode-opt input{position:absolute;opacity:0;inset:0;cursor:pointer}
+  .mode-opt label{margin:0;cursor:pointer;text-align:center;border:1.5px solid var(--line);border-radius:13px;padding:14px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border-color .2s,background .2s,transform .15s}
+  .mode-opt label:hover{transform:translateY(-2px)}
+  .mode-opt .ico{width:28px;height:28px;display:grid;place-items:center;color:var(--ink-soft);transition:color .2s}
+  .mode-opt .ico svg{width:21px;height:21px}
+  .mode-opt .nm{font-size:12px;font-weight:600}
+  .mode-opt input:checked+label{border-color:var(--navy);background:var(--navy-soft)}
+  .mode-opt input:checked+label .ico{color:var(--navy)}
+  .mode-opt.wa input:checked+label{border-color:var(--wa);background:#e6f9ee}
+  .mode-opt.wa input:checked+label .ico{color:var(--wa)}
+  input[type="text"],input[type="email"],input[type="tel"],input[type="date"],select{width:100%;font-family:inherit;font-size:15px;color:var(--ink);background:#fbfcfe;border:1px solid var(--line);border-radius:11px;padding:13px 15px;transition:border-color .2s,box-shadow .2s,background .2s}
+  input::placeholder{color:#aab2c2}
+  input:focus,select:focus{outline:none;background:#fff;border-color:var(--navy);box-shadow:0 0 0 4px var(--navy-soft)}
+  .tel-wrap{display:flex;align-items:stretch;background:#fbfcfe;border:1px solid var(--line);border-radius:11px;transition:border-color .2s,box-shadow .2s,background .2s}
+  .tel-wrap:focus-within{background:#fff;border-color:var(--navy);box-shadow:0 0 0 4px var(--navy-soft)}
+  .tel-prefix{display:flex;align-items:center;padding:0 14px;font-size:15px;font-weight:600;color:var(--ink);background:#eef2f8;border-right:1px solid var(--line);border-radius:11px 0 0 11px;white-space:nowrap;user-select:none;pointer-events:none}
+  .tel-wrap input[type="tel"]{border:none;background:transparent;border-radius:0 11px 11px 0;box-shadow:none;flex:1;min-width:0;letter-spacing:.04em}
+  .tel-wrap input[type="tel"]:focus{outline:none;background:transparent;border:none;box-shadow:none}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .cond{display:none}
+  .cond.show{display:block;animation:fade .3s ease both}
+  @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+  .submit{width:100%;font-family:inherit;font-size:14.5px;font-weight:600;color:#fff;background:var(--navy);border:none;border-radius:11px;padding:15px;cursor:pointer;margin-top:8px;letter-spacing:.03em;transition:background .25s,transform .15s}
+  .submit:hover{background:var(--navy-dk)}
+  .submit:active{transform:scale(.99)}
+  .trust{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:15px;font-size:11.5px;color:var(--ink-soft)}
+  .trust svg{width:13px;height:13px}
+  .done{display:none;text-align:center;padding:6px 0;animation:rise .5s cubic-bezier(.16,1,.3,1) both}
+  .done.show{display:block}
+  .check{width:60px;height:60px;margin:4px auto 20px;border-radius:50%;background:#e9f9ef;color:var(--ok);display:grid;place-items:center}
+  .check svg{width:28px;height:28px}
+  .done h2{font-family:'Fraunces',serif;font-weight:500;font-size:22px;margin-bottom:9px}
+  .done>p{color:var(--ink-soft);font-size:14px;line-height:1.6}
+  .done b{color:var(--ink);font-weight:600}
+  .done .sign{margin-top:22px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+  .done .sign b{color:var(--ink)}
+  @media(max-width:420px){.head,.inner{padding-left:24px;padding-right:24px}.head h1{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="backdrop" id="backdrop">
+  <div class="card">
+    <button class="close" id="close" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="head">
+      <div class="brand">
+        <div class="logo">CPEM</div>
+        <div class="brand-txt">
+          <strong>Centro de Postgrados del Estado de México</strong>
+          <span>Dirección de Vinculación Institucional</span>
+        </div>
+      </div>
+      <h1 id="headTitle">Conversemos por WhatsApp</h1>
+      <p id="headSub">Compártanos su número y un representante de la Dirección de Vinculación del CPEM se comunicará con usted para presentarle nuestra propuesta de colaboración académica e institucional.</p>
+    </div>
+    <div class="inner">
+      <div id="formView">
+        <form id="form" novalidate>
+          <div class="field">
+            <label>¿Cómo prefiere que le contactemos?</label>
+            <div class="mode-grid">
+              <div class="mode-opt wa">
+                <input type="radio" name="modo" id="mwa" value="WhatsApp" checked>
+                <label for="mwa">
+                  <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg></span>
+                  <span class="nm">WhatsApp</span>
+                </label>
+              </div>
+              <div class="mode-opt">
+                <input type="radio" name="modo" id="mtel" value="Llamada telefónica">
+                <label for="mtel">
+                  <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2a9 9 0 0 1 9 9M13 6a5 5 0 0 1 5 5M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg></span>
+                  <span class="nm">Llamada</span>
+                </label>
+              </div>
+              <div class="mode-opt">
+                <input type="radio" name="modo" id="mzoom" value="Videollamada por Zoom">
+                <label for="mzoom">
+                  <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg></span>
+                  <span class="nm">Zoom</span>
+                </label>
+              </div>
             </div>
           </div>
-          <h2 className="font-serif font-medium text-2xl leading-[1.22] tracking-tight mb-2 relative transition-all duration-300">
-            {content.title}
-          </h2>
-          <p className="text-[13.5px] leading-[1.55] opacity-90 relative transition-all duration-300">
-            {content.desc}
-          </p>
-        </div>
-
-        <div className="p-7 px-9">
-          {!submitted ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-[12.5px] font-medium mb-[9px] text-[#16223b]">¿Cómo prefiere que le contactemos?</label>
-                <div className="grid grid-cols-3 gap-[9px]">
-                  {/* WhatsApp Option */}
-                  <div className="relative">
-                    <input 
-                      type="radio" 
-                      name="modo" 
-                      id="mwa" 
-                      value="WhatsApp" 
-                      checked={modo === 'WhatsApp'} 
-                      onChange={(e) => setModo(e.target.value)} 
-                      className="absolute opacity-0 inset-0 cursor-pointer peer z-10" 
-                    />
-                    <label 
-                      htmlFor="mwa" 
-                      className={`m-0 cursor-pointer text-center rounded-[13px] pt-[14px] pb-3 px-1 flex flex-col items-center gap-2 transition-all duration-200 border-[1.5px] ${modo === 'WhatsApp' ? 'border-[#25d366] bg-[#e6f9ee]' : 'border-[#e3e8f0]'}`}
-                    >
-                      <div className={`w-7 h-7 flex items-center justify-center transition-colors duration-200 ${modo === 'WhatsApp' ? 'text-[#25d366]' : 'text-[#56607a]'}`}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[21px] h-[21px]">
-                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/>
-                        </svg>
-                      </div>
-                      <span className="text-[12px] font-semibold text-[#16223b]">WhatsApp</span>
-                    </label>
-                  </div>
-                  {/* Llamada Option */}
-                  <div className="relative">
-                    <input 
-                      type="radio" 
-                      name="modo" 
-                      id="mtel" 
-                      value="Llamada telefónica" 
-                      checked={modo === 'Llamada telefónica'} 
-                      onChange={(e) => setModo(e.target.value)} 
-                      className="absolute opacity-0 inset-0 cursor-pointer peer z-10" 
-                    />
-                    <label 
-                      htmlFor="mtel" 
-                      className={`m-0 cursor-pointer text-center rounded-[13px] pt-[14px] pb-3 px-1 flex flex-col items-center gap-2 transition-all duration-200 border-[1.5px] ${modo === 'Llamada telefónica' ? 'border-[#16335c] bg-[#e9eff8]' : 'border-[#e3e8f0]'}`}
-                    >
-                      <div className={`w-7 h-7 flex items-center justify-center transition-colors duration-200 ${modo === 'Llamada telefónica' ? 'text-[#16335c]' : 'text-[#56607a]'}`}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[21px] h-[21px]">
-                          <path d="M13 2a9 9 0 0 1 9 9M13 6a5 5 0 0 1 5 5M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/>
-                        </svg>
-                      </div>
-                      <span className="text-[12px] font-semibold text-[#16223b]">Llamada</span>
-                    </label>
-                  </div>
-                  {/* Zoom Option */}
-                  <div className="relative">
-                    <input 
-                      type="radio" 
-                      name="modo" 
-                      id="mzoom" 
-                      value="Videollamada por Zoom" 
-                      checked={modo === 'Videollamada por Zoom'} 
-                      onChange={(e) => setModo(e.target.value)} 
-                      className="absolute opacity-0 inset-0 cursor-pointer peer z-10" 
-                    />
-                    <label 
-                      htmlFor="mzoom" 
-                      className={`m-0 cursor-pointer text-center rounded-[13px] pt-[14px] pb-3 px-1 flex flex-col items-center gap-2 transition-all duration-200 border-[1.5px] ${modo === 'Videollamada por Zoom' ? 'border-[#16335c] bg-[#e9eff8]' : 'border-[#e3e8f0]'}`}
-                    >
-                      <div className={`w-7 h-7 flex items-center justify-center transition-colors duration-200 ${modo === 'Videollamada por Zoom' ? 'text-[#16335c]' : 'text-[#56607a]'}`}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[21px] h-[21px]">
-                          <path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/>
-                        </svg>
-                      </div>
-                      <span className="text-[12px] font-semibold text-[#16223b]">Zoom</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[12.5px] font-medium mb-[9px] text-[#16223b]">Nombre y cargo</label>
-                <input 
-                  type="text" 
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  placeholder="Ej. Dra. María González, Directora Médica" 
-                  className="w-full text-[15px] text-[#16223b] bg-[#fbfcfe] border border-[#e3e8f0] rounded-[11px] p-[13px_15px] focus:outline-none focus:bg-white focus:border-[#16335c] focus:ring-4 focus:ring-[#16335c]/10 transition-all placeholder:text-[#aab2c2]"
-                  required 
-                />
-              </div>
-
-              {modo === 'WhatsApp' && (
-                <div>
-                  <label className="block text-[12.5px] font-medium mb-[9px] text-[#16223b]">Número de WhatsApp</label>
-                  <input 
-                    type="tel" 
-                    placeholder="+52 1 ..."
-                    className="w-full text-[15px] text-[#16223b] bg-[#fbfcfe] border border-[#e3e8f0] rounded-[11px] p-[13px_15px] focus:outline-none focus:bg-white focus:border-[#16335c] focus:ring-4 focus:ring-[#16335c]/10 transition-all placeholder:text-[#aab2c2]"
-                    required 
-                  />
-                </div>
-              )}
-
-              {modo === 'Llamada telefónica' && (
-                <div>
-                  <label className="block text-[12.5px] font-medium mb-[9px] text-[#16223b]">Teléfono de contacto</label>
-                  <input 
-                    type="tel" 
-                    placeholder="+52 ..."
-                    className="w-full text-[15px] text-[#16223b] bg-[#fbfcfe] border border-[#e3e8f0] rounded-[11px] p-[13px_15px] focus:outline-none focus:bg-white focus:border-[#16335c] focus:ring-4 focus:ring-[#16335c]/10 transition-all placeholder:text-[#aab2c2]"
-                    required 
-                  />
-                </div>
-              )}
-
-              {modo === 'Videollamada por Zoom' && (
-                <div>
-                  <label className="block text-[12.5px] font-medium mb-[9px] text-[#16223b]">Correo electrónico</label>
-                  <input 
-                    type="email" 
-                    placeholder="nombre@institucion.mx"
-                    className="w-full text-[15px] text-[#16223b] bg-[#fbfcfe] border border-[#e3e8f0] rounded-[11px] p-[13px_15px] focus:outline-none focus:bg-white focus:border-[#16335c] focus:ring-4 focus:ring-[#16335c]/10 transition-all placeholder:text-[#aab2c2]"
-                    required 
-                  />
-                </div>
-              )}
-
-              {(modo === 'Llamada telefónica' || modo === 'Videollamada por Zoom') && (
-                <div>
-                  <label className="block text-[12.5px] font-medium mb-[9px] text-[#16223b]">Día y horario de su preferencia</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <input 
-                      type="date" 
-                      value={fecha}
-                      onChange={(e) => setFecha(e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full text-[15px] text-[#16223b] bg-[#fbfcfe] border border-[#e3e8f0] rounded-[11px] p-[13px_15px] focus:outline-none focus:bg-white focus:border-[#16335c] focus:ring-4 focus:ring-[#16335c]/10 transition-all placeholder:text-[#aab2c2]"
-                      required 
-                    />
-                    <select 
-                      value={hora}
-                      onChange={(e) => setHora(e.target.value)}
-                      className="w-full text-[15px] text-[#16223b] bg-[#fbfcfe] border border-[#e3e8f0] rounded-[11px] p-[13px_15px] focus:outline-none focus:bg-white focus:border-[#16335c] focus:ring-4 focus:ring-[#16335c]/10 transition-all"
-                      required
-                    >
-                      <option value="" disabled>Horario</option>
-                      <option>09:00 – 10:00</option>
-                      <option>10:00 – 11:00</option>
-                      <option>11:00 – 12:00</option>
-                      <option>12:00 – 13:00</option>
-                      <option>13:00 – 14:00</option>
-                      <option>14:00 – 15:00</option>
-                      <option>15:00 – 16:00</option>
-                      <option>16:00 – 17:00</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-
-              <button 
-                type="submit" 
-                className="w-full text-[14.5px] font-semibold text-white bg-[#16335c] border-none rounded-[11px] p-[15px] cursor-pointer mt-2 tracking-[0.03em] transition-all hover:bg-[#0f2645] active:scale-95"
-              >
-                {content.btn}
-              </button>
-
-              <div className="flex items-center justify-center gap-[7px] mt-4 text-[11.5px] text-[#56607a]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[13px] h-[13px]">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                </svg>
-                Sus datos son confidenciales · RVOE SEP 20180199
-              </div>
-            </form>
-          ) : (
-            <div className="text-center py-2 animate-[rise_0.5s_cubic-bezier(0.16,1,0.3,1)_both]">
-              <div className="w-[60px] h-[60px] mx-auto mb-[20px] rounded-full bg-[#e9f9ef] text-[#16a34a] flex items-center justify-center">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[28px] h-[28px]">
-                  <path d="M20 6 9 17l-5-5"/>
-                </svg>
-              </div>
-              <h2 className="font-serif font-medium text-[22px] mb-[9px] text-[#16223b]">Solicitud recibida</h2>
-              <p className="text-[14px] text-[#56607a] leading-[1.6]">
-                {getSuccessMessage()}
-              </p>
-              <div className="mt-[22px] pt-5 border-t border-[#e3e8f0] text-[12.5px] text-[#56607a] leading-[1.5]">
-                <b className="text-[#16223b]">Dr. Jorge Zaldívar Vázquez</b> · Director General<br />
-                Centro de Postgrados del Estado de México — CPEM<br />
-                info@postgradoscpem.mx · postgradoscpem.mx
-              </div>
+          <div class="field">
+            <label for="nombre">Nombre y cargo</label>
+            <input type="text" id="nombre" name="nombre" placeholder="Ej. Dra. María González, Directora Médica" required>
+          </div>
+          <div class="field cond show" id="campoWa">
+            <label for="whatsapp">Número de WhatsApp</label>
+            <div class="tel-wrap">
+              <span class="tel-prefix">+521</span>
+              <input type="tel" id="whatsapp" name="whatsapp" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="Número de 10 dígitos">
             </div>
-          )}
+          </div>
+          <div class="field cond" id="campoTel">
+            <label for="telefono">Teléfono de contacto</label>
+            <div class="tel-wrap">
+              <span class="tel-prefix">+521</span>
+              <input type="tel" id="telefono" name="telefono" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="Número de 10 dígitos">
+            </div>
+          </div>
+          <div class="field cond" id="campoCorreo">
+            <label for="correo">Correo electrónico</label>
+            <input type="email" id="correo" name="correo" placeholder="nombre@institucion.mx">
+          </div>
+          <div class="field cond" id="campoFecha">
+            <label>Día y horario de su preferencia</label>
+            <div class="row">
+              <input type="date" id="fecha" name="fecha">
+              <select id="hora" name="hora">
+                <option value="" disabled selected>Horario</option>
+                <option>09:00 – 10:00</option>
+                <option>10:00 – 11:00</option>
+                <option>11:00 – 12:00</option>
+                <option>12:00 – 13:00</option>
+                <option>13:00 – 14:00</option>
+                <option>14:00 – 15:00</option>
+                <option>15:00 – 16:00</option>
+                <option>16:00 – 17:00</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="submit" id="btn">SOLICITAR POR WHATSAPP</button>
+          <div class="trust">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Sus datos son confidenciales · RVOE SEP 20180199
+          </div>
+        </form>
+      </div>
+      <div class="done" id="done">
+        <div class="check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <h2>Solicitud recibida</h2>
+        <p id="doneMsg"></p>
+        <div class="sign">
+          <b>Dr. Jorge Zaldívar Vázquez</b> · Director General<br>
+          Centro de Postgrados del Estado de México — CPEM<br>
+          info@postgradoscpem.mx · postgradoscpem.mx
         </div>
       </div>
     </div>
-  );
-};
+  </div>
+</div>
+
+<div class="reopen" id="reopen">
+  <button id="reopenBtn">Abrir formulario</button>
+</div>
+
+<script>
+  const form=document.getElementById('form');
+  const fecha=document.getElementById('fecha');
+  const btn=document.getElementById('btn');
+  const campoWa=document.getElementById('campoWa');
+  const campoTel=document.getElementById('campoTel');
+  const campoCorreo=document.getElementById('campoCorreo');
+  const campoFecha=document.getElementById('campoFecha');
+  const whatsapp=document.getElementById('whatsapp');
+  const telefono=document.getElementById('telefono');
+  const correo=document.getElementById('correo');
+  const hora=document.getElementById('hora');
+  const headTitle=document.getElementById('headTitle');
+  const headSub=document.getElementById('headSub');
+  const backdrop=document.getElementById('backdrop');
+  const reopen=document.getElementById('reopen');
+  fecha.min=new Date().toISOString().split('T')[0];
+
+  function soloDigitos(el){
+    const limpio=el.value.replace(/\D/g,'').slice(0,10);
+    if(el.value!==limpio) el.value=limpio;
+  }
+  whatsapp.addEventListener('input',()=>soloDigitos(whatsapp));
+  telefono.addEventListener('input',()=>soloDigitos(telefono));
+
+  function actualizarCampos(){
+    whatsapp.setCustomValidity('');telefono.setCustomValidity('');
+    const modo=document.querySelector('input[name="modo"]:checked').value;
+    if(modo==='WhatsApp'){
+      campoWa.classList.add('show');campoTel.classList.remove('show');campoCorreo.classList.remove('show');campoFecha.classList.remove('show');
+      whatsapp.required=true;telefono.required=false;correo.required=false;fecha.required=false;hora.required=false;fecha.setCustomValidity('');
+      btn.textContent='SOLICITAR POR WHATSAPP';
+      headTitle.textContent='Conversemos por WhatsApp';
+      headSub.textContent='Compártanos su número y un representante de la Dirección de Vinculación del CPEM se comunicará con usted para presentarle nuestra propuesta de colaboración académica e institucional.';
+    }else if(modo==='Llamada telefónica'){
+      campoWa.classList.remove('show');campoTel.classList.add('show');campoCorreo.classList.remove('show');campoFecha.classList.add('show');
+      whatsapp.required=false;telefono.required=true;correo.required=false;fecha.required=true;hora.required=true;
+      btn.textContent='AGENDAR LLAMADA DE 15 MIN';
+      headTitle.textContent='Agende una llamada de 15 minutos';
+      headSub.textContent='Seleccione el día y horario de su preferencia. La Dirección de Vinculación del CPEM le presentará las oportunidades de convenio y colaboración institucional.';
+    }else{
+      campoWa.classList.remove('show');campoTel.classList.remove('show');campoCorreo.classList.add('show');campoFecha.classList.add('show');
+      whatsapp.required=false;telefono.required=false;correo.required=true;fecha.required=true;hora.required=true;
+      btn.textContent='AGENDAR SESIÓN POR ZOOM';
+      headTitle.textContent='Agende una sesión virtual por Zoom';
+      headSub.textContent='Indique el horario que mejor se adapte a su agenda. Le enviaremos el acceso a la videollamada para presentarle nuestra propuesta de alianza estratégica.';
+    }
+  }
+  document.querySelectorAll('input[name="modo"]').forEach(r=>{r.addEventListener('change',actualizarCampos)});
+  actualizarCampos();
+
+  fecha.addEventListener('change',()=>{
+    const day=new Date(fecha.value+'T00:00').getDay();
+    if(day===0||day===6){fecha.setCustomValidity('Por favor seleccione un día hábil.');fecha.reportValidity();}
+    else{fecha.setCustomValidity('');}
+  });
+
+  form.addEventListener('submit',(e)=>{
+    e.preventDefault();
+    const modo=document.querySelector('input[name="modo"]:checked').value;
+    const activo=modo==='WhatsApp'?whatsapp:(modo==='Llamada telefónica'?telefono:null);
+    if(activo){
+      const dig=activo.value.replace(/\D/g,'');
+      activo.setCustomValidity(dig.length===10?'':'Ingrese los 10 dígitos del número.');
+    }
+    if(!form.checkValidity()){form.reportValidity();return;}
+    const d=new FormData(form);
+    const nombre=(d.get('nombre')||'').trim();
+    let msg;
+    if(modo==='WhatsApp'){
+      msg=`Gracias, <b>${nombre}</b>. Un representante de la Dirección de Vinculación del CPEM se comunicará con usted por <b>WhatsApp</b> a la brevedad.`;
+    }else{
+      const fechaFmt=new Date(d.get('fecha')+'T00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+      const dur=modo==='Videollamada por Zoom'?'de 20 a 30 minutos':'de 15 minutos';
+      msg=`Gracias, <b>${nombre}</b>. Su sesión ${dur} por <b>${modo}</b> queda solicitada para el <b>${fechaFmt}</b> de <b>${d.get('hora')}</b>. Le confirmaremos los detalles a la brevedad.`;
+    }
+    document.getElementById('doneMsg').innerHTML=msg;
+    document.getElementById('formView').style.display='none';
+    document.getElementById('done').classList.add('show');
+  });
+
+  // Cerrar / reabrir (solo para la vista previa)
+  document.getElementById('close').addEventListener('click',()=>{
+    backdrop.style.display='none';reopen.style.display='flex';
+  });
+  document.getElementById('reopenBtn').addEventListener('click',()=>{
+    reopen.style.display='none';backdrop.style.display='flex';
+  });
+</script>
+</body>
+</html>
