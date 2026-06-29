@@ -111,7 +111,7 @@
         </div>
         <div class="field cond show" id="campoWa">
           <label for="whatsapp">Número de WhatsApp</label>
-          <input type="tel" id="whatsapp" name="whatsapp" value="+521 " placeholder="+52 1 ...">
+          <input type="tel" id="whatsapp" name="whatsapp" value="+521" placeholder="+52 1 ...">
         </div>
         <div class="field cond" id="campoTel">
           <label for="telefono">Teléfono de contacto</label>
@@ -189,7 +189,7 @@
       headTitle.textContent='Agende una llamada de 15 minutos';
       headSub.textContent='Seleccione el día y horario de su preferencia. La Dirección de Vinculación del CPEM le presentará las oportunidades de convenio y colaboración institucional.';
     }else{
-      campoWa.classList.remove('show');campoTel.classList.remove('show');campoCorreo.classList.add('add');campoFecha.classList.add('show');
+      campoWa.classList.remove('show');campoTel.classList.remove('show');campoCorreo.classList.add('show');campoFecha.classList.add('show');
       whatsapp.required=false;telefono.required=false;correo.required=true;fecha.required=true;hora.required=true;
       btn.textContent='AGENDAR SESIÓN POR ZOOM';
       headTitle.textContent='Agende una sesión virtual por Zoom';
@@ -212,9 +212,17 @@
     btn.textContent = 'ENVIANDO...';
     btn.disabled = true;
 
+    // Limpiar cualquier espacio en blanco ingresado en los teléfonos
+    if (whatsapp.value) {
+      whatsapp.value = whatsapp.value.replace(/\s+/g, '');
+    }
+    if (telefono.value) {
+      telefono.value = telefono.value.replace(/\s+/g, '');
+    }
+
     const d=new FormData(form);
     
-    // URL de tu Google Apps Script de conexión
+    // URL del Web App de Google Apps Script (Reemplazar cuando lo publiques)
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzE705tPGpkVOZyE7-FsGanSjKbleSerbSoy1AGn8QjQkdmkuOKysXgav2wSqGRZ9Q/exec";
     
     const procesarExito = () => {
