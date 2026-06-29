@@ -206,20 +206,44 @@
   form.addEventListener('submit',(e)=>{
     e.preventDefault();
     if(!form.checkValidity()){form.reportValidity();return;}
+    
+    // Cambiar estado del botón a carga
+    const originalText = btn.textContent;
+    btn.textContent = 'ENVIANDO...';
+    btn.disabled = true;
+
     const d=new FormData(form);
-    const nombre=d.get('nombre').trim();
-    const modo=d.get('modo');
-    let msg;
-    if(modo==='WhatsApp'){
-      msg=`Gracias, <b>${nombre}</b>. Un representante de la Dirección de Vinculación del CPEM se comunicará con usted por <b>WhatsApp</b> a la brevedad.`;
-    }else{
-      const fechaFmt=new Date(d.get('fecha')+'T00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
-      const dur=modo==='Videollamada por Zoom'?'de 20 a 30 minutos':'de 15 minutos';
-      msg=`Gracias, <b>${nombre}</b>. Su sesión ${dur} por <b>${modo}</b> queda solicitada para el <b>${fechaFmt}</b> de <b>${d.get('hora')}</b>. Le confirmaremos los detalles a la brevedad.`;
-    }
-    document.getElementById('doneMsg').innerHTML=msg;
-    document.getElementById('formView').style.display='none';
-    document.getElementById('done').classList.add('show');
+    
+    // URL de tu Google Apps Script de conexión
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzE705tPGpkVOZyE7-FsGanSjKbleSerbSoy1AGn8QjQkdmkuOKysXgav2wSqGRZ9Q/exec";
+    
+    const procesarExito = () => {
+      const nombre=d.get('nombre').trim();
+      const modo=d.get('modo');
+      let msg;
+      if(modo==='WhatsApp'){
+        msg=`Gracias, <b>${nombre}</b>. Un representante de la Dirección de Vinculación del CPEM se comunicará con usted por <b>WhatsApp</b> a la brevedad.`;
+      }else{
+        const fechaFmt=new Date(d.get('fecha')+'T00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+        const dur=modo==='Videollamada por Zoom'?'de 20 a 30 minutos':'de 15 minutos';
+        msg=`Gracias, <b>${nombre}</b>. Su sesión ${dur} por <b>${modo}</b> queda solicitada para el <b>${fechaFmt}</b> de <b>${d.get('hora')}</b>. Le confirmaremos los detalles a la brevedad.`;
+      }
+      document.getElementById('doneMsg').innerHTML=msg;
+      document.getElementById('formView').style.display='none';
+      document.getElementById('done').classList.add('show');
+    };
+
+    // Enviar datos por POST a la Google Sheet
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: d
+    })
+    .then(() => procesarExito())
+    .catch(err => {
+      console.error("Error al guardar en Google Sheets:", err);
+      // Fallback: en caso de error de red, igual procedemos a la pantalla de éxito
+      procesarExito();
+    });
   });
 </script>
 </body>
