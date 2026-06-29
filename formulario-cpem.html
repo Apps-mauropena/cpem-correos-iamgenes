@@ -42,6 +42,12 @@
   input[type="text"],input[type="email"],input[type="tel"],input[type="date"],select{width:100%;font-family:inherit;font-size:15px;color:var(--ink);background:#fbfcfe;border:1px solid var(--line);border-radius:11px;padding:13px 15px;transition:border-color .2s,box-shadow .2s,background .2s}
   input::placeholder{color:#aab2c2}
   input:focus,select:focus{outline:none;background:#fff;border-color:var(--navy);box-shadow:0 0 0 4px var(--navy-soft)}
+  /* ── Campo de teléfono con prefijo +521 FIJO ── */
+  .tel-wrap{display:flex;align-items:stretch;background:#fbfcfe;border:1px solid var(--line);border-radius:11px;transition:border-color .2s,box-shadow .2s,background .2s}
+  .tel-wrap:focus-within{background:#fff;border-color:var(--navy);box-shadow:0 0 0 4px var(--navy-soft)}
+  .tel-prefix{display:flex;align-items:center;padding:0 14px;font-size:15px;font-weight:600;color:var(--ink);background:#eef2f8;border-right:1px solid var(--line);border-radius:11px 0 0 11px;white-space:nowrap;user-select:none;pointer-events:none}
+  .tel-wrap input[type="tel"]{border:none;background:transparent;border-radius:0 11px 11px 0;box-shadow:none;flex:1;min-width:0;letter-spacing:.04em}
+  .tel-wrap input[type="tel"]:focus{outline:none;background:transparent;border:none;box-shadow:none}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .cond{display:none}
   .cond.show{display:block;animation:fade .3s ease both}
@@ -111,11 +117,17 @@
         </div>
         <div class="field cond show" id="campoWa">
           <label for="whatsapp">Número de WhatsApp</label>
-          <input type="tel" id="whatsapp" name="whatsapp" value="+521" placeholder="+52 1 ...">
+          <div class="tel-wrap">
+            <span class="tel-prefix">+521</span>
+            <input type="tel" id="whatsapp" name="whatsapp" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="Número de 10 dígitos">
+          </div>
         </div>
         <div class="field cond" id="campoTel">
           <label for="telefono">Teléfono de contacto</label>
-          <input type="tel" id="telefono" name="telefono" placeholder="+52 ...">
+          <div class="tel-wrap">
+            <span class="tel-prefix">+521</span>
+            <input type="tel" id="telefono" name="telefono" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="Número de 10 dígitos">
+          </div>
         </div>
         <div class="field cond" id="campoCorreo">
           <label for="correo">Correo electrónico</label>
@@ -174,11 +186,24 @@
   const headTitle=document.getElementById('headTitle');
   const headSub=document.getElementById('headSub');
   fecha.min=new Date().toISOString().split('T')[0];
+
+  // ── Solo dígitos, sin espacios ni letras, máximo 10 ──
+  function soloDigitos(el){
+    const limpio = el.value.replace(/\D/g,'').slice(0,10);
+    if(el.value !== limpio) el.value = limpio;
+  }
+  whatsapp.addEventListener('input',()=>soloDigitos(whatsapp));
+  telefono.addEventListener('input',()=>soloDigitos(telefono));
+
   function actualizarCampos(){
+    // Limpiar mensajes de validación al cambiar de modo
+    whatsapp.setCustomValidity('');
+    telefono.setCustomValidity('');
     const modo=document.querySelector('input[name="modo"]:checked').value;
     if(modo==='WhatsApp'){
       campoWa.classList.add('show');campoTel.classList.remove('show');campoCorreo.classList.remove('show');campoFecha.classList.remove('show');
       whatsapp.required=true;telefono.required=false;correo.required=false;fecha.required=false;hora.required=false;
+      fecha.setCustomValidity('');
       btn.textContent='SOLICITAR POR WHATSAPP';
       headTitle.textContent='Conversemos por WhatsApp';
       headSub.textContent='Compártanos su número y un representante de la Dirección de Vinculación del CPEM se comunicará con usted para presentarle nuestra propuesta de colaboración académica e institucional.';
@@ -198,36 +223,44 @@
   }
   document.querySelectorAll('input[name="modo"]').forEach(r=>{r.addEventListener('change',actualizarCampos)});
   actualizarCampos();
+
   fecha.addEventListener('change',()=>{
     const day=new Date(fecha.value+'T00:00').getDay();
     if(day===0||day===6){fecha.setCustomValidity('Por favor seleccione un día hábil.');fecha.reportValidity();}
     else{fecha.setCustomValidity('');}
   });
+
   form.addEventListener('submit',(e)=>{
     e.preventDefault();
+
+    // Validar que el teléfono activo tenga exactamente 10 dígitos
+    const modo=document.querySelector('input[name="modo"]:checked').value;
+    const activo = modo==='WhatsApp' ? whatsapp : (modo==='Llamada telefónica' ? telefono : null);
+    if(activo){
+      const dig=activo.value.replace(/\D/g,'');
+      activo.setCustomValidity(dig.length===10 ? '' : 'Ingrese los 10 dígitos del número.');
+    }
+
     if(!form.checkValidity()){form.reportValidity();return;}
-    
+
     // Cambiar estado del botón a carga
     const originalText = btn.textContent;
     btn.textContent = 'ENVIANDO...';
     btn.disabled = true;
 
-    // Limpiar cualquier espacio en blanco ingresado en los teléfonos
-    if (whatsapp.value) {
-      whatsapp.value = whatsapp.value.replace(/\s+/g, '');
-    }
-    if (telefono.value) {
-      telefono.value = telefono.value.replace(/\s+/g, '');
-    }
-
     const d=new FormData(form);
-    
-    // URL del Web App de Google Apps Script (Reemplazar cuando lo publiques)
+
+    // Armar el número completo con +521 (solo dígitos, nunca con espacios)
+    const waDig  = whatsapp.value.replace(/\D/g,'');
+    const telDig = telefono.value.replace(/\D/g,'');
+    if(waDig)  d.set('whatsapp', '+521' + waDig);
+    if(telDig) d.set('telefono', '+521' + telDig);
+
+    // URL del Web App de Google Apps Script
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzE705tPGpkVOZyE7-FsGanSjKbleSerbSoy1AGn8QjQkdmkuOKysXgav2wSqGRZ9Q/exec";
-    
+
     const procesarExito = () => {
       const nombre=d.get('nombre').trim();
-      const modo=d.get('modo');
       let msg;
       if(modo==='WhatsApp'){
         msg=`Gracias, <b>${nombre}</b>. Un representante de la Dirección de Vinculación del CPEM se comunicará con usted por <b>WhatsApp</b> a la brevedad.`;
@@ -249,7 +282,6 @@
     .then(() => procesarExito())
     .catch(err => {
       console.error("Error al guardar en Google Sheets:", err);
-      // Fallback: en caso de error de red, igual procedemos a la pantalla de éxito
       procesarExito();
     });
   });
